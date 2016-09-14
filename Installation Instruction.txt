@@ -1,0 +1,155 @@
+Centos 6.7
+
+$ yum update -y
+$ yum groupinstall "Development Tools"
+
+# Install Ruby
+$ yum install gcc g++ make automake autoconf curl-devel openssl-devel zlib-devel httpd-devel apr-devel apr-util-devel sqlite-devel
+$ wget http://ftp.ruby-lang.org/pub/ruby/2.3/ruby-2.3.0.tar.gz 
+$ tar xvzf ruby-2.3.0.tar.gz
+$ cd ruby-2.3.0
+$ ./configure --prefix=/usr
+$ make
+$ make install
+
+# Install RubyGems 
+$ wget https://rubygems.org/rubygems/rubygems-2.6.3.tgz
+$ tar xvzf rubygems-2.6.3.tgz
+$ cd rubygems-2.6.3
+$ ruby setup.rb config
+
+# Install Rails
+$ gem update --system
+$ gem install rails 
+
+# Install g++/gcc 4.8.2 in CentOS 6.7
+$ wget http://people.centos.org/tru/devtools-2/devtools-2.repo -O /etc/yum.repos.d/devtools-2.repo 
+$ yum install devtoolset-2-gcc devtoolset-2-binutils 
+$ yum install devtoolset-2-gcc-c++ devtoolset-2-gcc-gfortran 
+$ /opt/rh/devtoolset-2/root/usr/bin/gcc --version
+$ scl enable devtoolset-2 bash
+$ source /opt/rh/devtoolset-2/enable
+
+# Install Git
+$ yum install curl-devel expat-devel gettext-devel openssl-devel zlib-devel gcc perl-CPAN
+$ cd /usr/src
+$ wget https://www.kernel.org/pub/software/scm/git/git-2.10.0.tar.gz
+$ tar xzf git-2.10.0.tar.gz
+$ cd git-2.10.0
+$ make prefix=/usr/local/git all
+$ make prefix=/usr/local/git install
+$ echo "export PATH=$PATH:/usr/local/git/bin" >> /etc/bashrc
+$ source /etc/bashrc
+$ git -version
+
+# Install NodeJs
+$ yum -y install screen
+$ cd /usr/src
+$ wget http://nodejs.org/dist/v4.4.3/node-v4.4.3.tar.gz
+$ tar zxf node-v4.4.3.tar.gz
+$ cd node-v4.4.3
+$ ./configure
+$ make
+$ make install
+
+# Install MySQL
+$ wget http://dev.mysql.com/get/mysql57-community-release-el6-7.noarch.rpm
+$ yum localinstall mysql57-community-release-el6-7.noarch.rpm
+$ yum repolist enabled | grep "mysql.*-community.*"
+$ yum install mysql-community-server
+$ service mysqld start
+$ grep 'temporary password' /var/log/mysqld.log
+$ mysql_secure_installation
+
+
+# Install Python
+$ cd /usr/src
+$ wget https://www.python.org/ftp/python/3.5.1/Python-3.5.1.tar.xz
+$ yum install xz-libs
+$ xz -d Python-3.5.1.tar.xz
+$ tar -xvf Python-3.5.1.tar
+$ cd Python-3.5.1
+$ ./configure
+$ make && make altinstall
+
+# Install ANT
+$ wget http://mirror.sdunix.com/apache/ant/binaries/apache-ant-1.9.7-bin.zip
+$ unzip apache-ant-1.9.7-bin.zip
+$ mv apache-ant-1.9.7/ /opt/ant
+$ ln -s /opt/ant/bin/ant /usr/bin/ant
+
+$ vi /etc/profile.d/ant.sh
+#!/bin/bash
+ANT_HOME=/opt/ant
+PATH=$ANT_HOME/bin:$PATH
+export PATH ANT_HOME
+export CLASSPATH=.
+
+$ chmod +x /etc/profile.d/ant.sh
+$ source /etc/profile.d/ant.sh
+$ ant -version
+$ echo $ANT_HOME
+
+# Install MAVEN
+$ wget http://apache.parentingamerica.com/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.zip
+$ unzip apache-maven-3.3.9-bin.zip
+$ mv apache-maven-3.3.9/ /opt/maven
+$ ln -s /opt/maven/bin/mvn /usr/bin/mvn
+
+$ vi /etc/profile.d/maven.sh
+#!/bin/bash
+MAVEN_HOME=/opt/maven
+PATH=$MAVEN_HOME/bin:$PATH
+export PATH MAVEN_HOME
+export CLASSPATH=.
+
+$ chmod +x /etc/profile.d/maven.sh
+$ source /etc/profile.d/maven.sh
+$ mvn -version
+$ echo $MAVEN_HOME
+
+# Install TOMCAT
+$ wget http://mirror.csclub.uwaterloo.ca/apache/tomcat/tomcat-9/v9.0.0.M4/bin/apache-tomcat-9.0.0.M4.zip
+$ unzip apache-tomcat-9.0.0.M4.zip
+$ mv apache-tomcat-9.0.0.M4/ /opt/tomcat
+
+$ vi /etc/profile.d/tomcat.sh
+#!/bin/bash
+CATALINA_HOME=/opt/tomcat
+PATH=$CATALINA_HOME/bin:$PATH
+export PATH CATALINA_HOME
+export CLASSPATH=.
+
+$ chmod +x /etc/profile.d/tomcat.sh
+$ source /etc/profile.d/tomcat.sh
+$ chmod +x $CATALINA_HOME/bin/startup.sh
+$ chmod +x $CATALINA_HOME/bin/shutdown.sh
+$ chmod +x $CATALINA_HOME/bin/catalina.sh
+
+$ vi /etc/init.d/tomcat
+#!/bin/sh
+# chkconfig: 2345 80 20
+# Description: Tomcat Start/Shutdown script
+export JAVA_HOME=/usr/java/jdk1.8.0_91
+case $1 in
+start)
+cd /opt/tomcat/bin/
+./startup.sh
+;;
+stop)
+cd /opt/tomcat/bin/
+./shutdown.sh
+;;
+restart)
+cd /opt/tomcat/bin/
+./shutdown.sh
+cd /opt/tomcat/bin/
+./startup.sh
+;;
+esac
+exit 0
+
+$ chmod a+x /etc/init.d/tomcat
+$ chkconfig --add tomcat
+$ systemctl start tomcat
+$ chkconfig tomcat on
